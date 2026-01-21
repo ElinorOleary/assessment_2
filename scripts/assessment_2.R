@@ -164,8 +164,6 @@ filtered_results_24h = mutate(filtered_results_24h,
                                                     ifelse(log2FoldChange < -1 & padj < 0.05, "Down-regulated",
                                                            "Not significant"))
 )
-#save in results directory
-write.csv(filtered_results_24h, file = "results/filtered_results_24.csv", row.names = FALSE)
 #2h vs naive comparison ----
 #log2FoldChange > 0 → higher expression in Allo24h, log2FoldChange < 0 → higher expression in Naive
 results_2h_table = results(dds, contrast= c('Group', 'Allo2h', 'Naive'))
