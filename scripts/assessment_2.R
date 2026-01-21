@@ -9,9 +9,9 @@ library(biomaRt)
 library(ggVennDiagram)
 library(patchwork)
 # Colour schemes: ----
-group_colours = c("Allo24h" = "#E41A1C", 
-                  "Allo2h" = "#377EB8", 
-                  "Naive" = "#4DAF4A")
+group_colours = c("Allo24h" = "#264653", 
+                  "Allo2h" = "#e9c46a", 
+                  "Naive" = "#e76f51")
 
 heatmap_colours = colorRampPalette(c("#053061", "#2166AC", "#4393C3", "#92C5DE",
                                      "#D1E5F0", "#FDDBC7", "#F4A582", "#D6604D",
@@ -101,7 +101,7 @@ plotPCA(rld, intgroup='Group') +
                       labels = c("Allo 24h", "Allo 2h", "Naive")) +
   theme_bw() +
   theme(
-    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
     axis.title = element_text(size = 12),
     axis.text =element_text(size = 10),
     legend.title = element_text(size = 11, face = "bold"),
@@ -272,7 +272,7 @@ cat("Total DEGs (24h):", length(degs_24h_list), "\n")
 cat("Total DEGs (2h):", length(degs_2h_list),"\n")
 #Create venndiagram
 ggVennDiagram(list("24h" = degs_24h_list, "2h" = degs_2h_list)) +
-  scale_fill_gradient(low = "white", high = "steelblue", name = "Counts") +
+  scale_fill_gradient(low = "white", high = "#606c38", name = "Counts") +
   ggtitle("DEGs Overlap at 2h and 24h") +
   theme(
     plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
@@ -281,6 +281,59 @@ ggVennDiagram(list("24h" = degs_24h_list, "2h" = degs_2h_list)) +
   )
 ggsave("results/figures/venndiagram.pdf")
 #9.1 Heat map of top 250 genes
+# Up and downregulated degs venndiagram ----
+# Upregulated ----
+# Create objects containing only significant pos or neg fold change
+up_degs_2h = filter(degs_2h, log2FoldChange > 1 )
+down_degs_2h = filter(degs_2h, log2FoldChange < -1 )
+up_degs_24h = filter(degs_24h, log2FoldChange > 1 )
+down_degs_24h = filter(degs_24h, log2FoldChange < -1 )
+#Create lists
+up_degs_2h_list = up_degs_2h$external_gene_name
+down_degs_2h_list = down_degs_2h$external_gene_name
+up_degs_24h_list = up_degs_24h$external_gene_name
+down_degs_24h_list = down_degs_24h$external_gene_name
+#Up regulated stats
+up_shared_genes = intersect(up_degs_24h_list, up_degs_2h_list)
+up_unique_24h = setdiff(up_degs_24h_list, up_degs_2h_list)
+up_unique_2h = setdiff(up_degs_2h_list, up_degs_24h_list)
+#Down stats
+down_shared_genes = intersect(down_degs_24h_list, down_degs_2h_list)
+down_unique_24h = setdiff(down_degs_24h_list, down_degs_2h_list)
+down_unique_2h = setdiff(down_degs_2h_list, down_degs_24h_list)
+# Print statistics - up reg
+cat("Upregulated DEGs unique to 24h:", length(up_unique_24h), "\n")
+cat("Upregulated DEGs unique to 2h:", length(up_unique_2h), "\n")
+cat("Upregulated DEGs shared:", length(up_shared_genes), "\n")
+cat("Total DEGs Upregulated at 24h:", length(up_degs_24h_list), "\n")
+cat("Total DEGs upregulated at 2h:", length(up_degs_2h_list),"\n")
+# Print statistics - down reg
+cat("Downregulated DEGs unique to 24h:", length(down_unique_24h), "\n")
+cat("Downregulated DEGs unique to 2h:", length(down_unique_2h), "\n")
+cat("Downregulated DEGs shared:", length(down_shared_genes), "\n")
+cat("Total DEGs Downregulated at 24h:", length(down_degs_24h_list), "\n")
+cat("Total DEGs Downregulated at 2h:", length(down_degs_2h_list),"\n")
+#Create upregulated venn diagram
+ggVennDiagram(list("24h" = up_degs_24h_list, "2h" = up_degs_2h_list)) +
+  scale_fill_gradient(low = "white", high = "#606c38", name = "Counts") +
+  ggtitle("Upregulated DEGs Overlap at 2h and 24h") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    text = element_text(size = 6),
+    plot.margin = unit(c(2, 2, 2, 2), "cm")
+  )
+ggsave("results/figures/upregulated_venndiagram.pdf")
+#Create downregulated venn diagram
+ggVennDiagram(list("24h" = down_degs_24h_list, "2h" = down_degs_2h_list)) +
+  scale_fill_gradient(low = "white", high = "#606c38", name = "Counts") +
+  ggtitle("Downregulated DEGs Overlap at 2h and 24h") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    text = element_text(size = 6),
+    plot.margin = unit(c(2, 2, 2, 2), "cm")
+  )
+ggsave("results/figures/downregulated_venndiagram.pdf")
+
 #Heatmap of DEGs - 2hrs ----
 #get 250 largest fold changes that are also significant
 degs_2h = mutate(degs_2h, abslog2FoldChange=abs(log2FoldChange))
