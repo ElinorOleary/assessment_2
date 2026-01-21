@@ -254,12 +254,10 @@ write.csv(annot_results_2h, file = "results/annot_results_2h.csv", row.names = F
 #degs for 24h
 #absolute fold change (pos or neg >1) and adj p value <0.05
 degs_24h = filter(annot_results_24h, abs(log2FoldChange) > 1 & padj < 0.05)
-View(head(degs_24h, 20))
 write.csv(degs_24h, file = "results/degs_24h.csv", row.names = FALSE)
 #degs for 2h
 #degs = differentially expressed genes, absolute fold change (pos or neg >1) and adj p value <0.05
 degs_2h = filter(annot_results_2h, abs(log2FoldChange) > 1 & padj < 0.05)
-View(head(degs_2h, 20))
 write.csv(degs_2h, file = "results/degs_2h.csv", row.names = FALSE)
 #Create Degs venn diagram ----
 degs_24h_list = degs_24h$external_gene_name
