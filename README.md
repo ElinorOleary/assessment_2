@@ -63,9 +63,9 @@ The reference transcriptome used is the GENCODE mouse, release M31.
 │   │   ├── venndiagram.pdf                       # Venn Diagram of all DEGs across 2 and 24 hour timepoints
 │   │   ├── volcano_plot_24h.pdf                  # Volcano plot of differential gene expression at 24 hours
 │   │   └── volcano_plot_2h.pdf                   # Volcano plot of differential gene expression at 2 hours
-│   ├── results_24h_table.csv                    # DESeq2 results of Allo24h vs Naive
-│   ├── results_2h_table.csv                     # DESeq2 results of Allo2h vs naive
-│   └── rld.rds                                  # r-log transformed counts
+│   ├── results_24h_table.csv              # DESeq2 results of Allo24h vs Naive
+│   ├── results_2h_table.csv               # DESeq2 results of Allo2h vs naive
+│   └── rld.rds                            # r-log transformed counts
 └── scripts/
     ├── assessment_2.R
     └── directory_structure.R
