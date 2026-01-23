@@ -242,7 +242,9 @@ volcano_24h = ggplot(filtered_results_24h, aes(x=log2FoldChange, y=logPVal, colo
                    box.padding = 0.3, point.padding = 0.2,
                    max.overlaps = Inf,
                    segment.color = "grey40", segment.size = 0.4) +
-  theme_bw() #white background
+  theme_bw() + #white background
+  xlim(-15, 15) +  
+  ylim(0, 150)
 ggsave("results/figures/volcano_plot_24h.pdf",
        volcano_24h)
 #plot 2hr comparison volcano plot ----
@@ -261,7 +263,9 @@ volcano_2h = ggplot(filtered_results_2h, aes(x=log2FoldChange, y=logPVal, color 
                    box.padding = 0.3, point.padding = 0.2,
                    max.overlaps = Inf,
                    segment.color = "grey40", segment.size = 0.4) +
-  theme_bw()
+  theme_bw() +
+  xlim(-15, 15) + 
+  ylim(0, 150)
 ggsave("results/figures/volcano_plot_2h.pdf",
        volcano_2h)
 #combined volcano plot figure ----
