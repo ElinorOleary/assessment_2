@@ -57,6 +57,7 @@ if (!file.exists("data/gene_map.csv")) {
 } else {
   print("gene_map.csv has already been downloaded.")
 }
+
 #create txi object ----
 #files is a vector of filepaths to quants.sf files
 #the _quants.sf files contain data outputed by salmon
@@ -65,12 +66,19 @@ txi = tximport(files,
                type='salmon',
                tx2gene=gene_map,
                ignoreTxVersion=TRUE)
+#Rename samples ----
+renamed_samples = c("24h_1","24h_2","2h_3","2h_4","2h_1","2h_2","N_3","N_4","N_1","N_2","24h_3","24h_4")
+sample_table$Sample_Name = renamed_samples
+rownames(sample_table) = renamed_samples
+colnames(txi$counts) = renamed_samples
+colnames(txi$abundance) = renamed_samples
+colnames(txi$length) = renamed_samples
 
 #normalisation of data ----
 #dds DESeq - Differential Expression analysis of Sequence count data. dds - DESeq Data set
 #DESeqDataSetFromTximport is a function that uses the data stored in the txi to create a DESeq data set
 #then adding size factor, duspersuions and bionomial wald test witin DDS
-dds = DESeqDataSetFromTximport(txi, colData = sample_table, design = ~ Group)
+dds = DESeqDataSetFromTximport(txi, colData = sample_table_renamed, design = ~ Group)
 dds = estimateSizeFactors(dds)
 dds = estimateDispersions(dds)
 dds = nbinomWaldTest(dds)
@@ -258,8 +266,9 @@ write.csv(degs_24h, file = "results/degs_24h.csv", row.names = FALSE)
 degs_2h = filter(annot_results_2h, abs(log2FoldChange) > 1 & padj < 0.05)
 write.csv(degs_2h, file = "results/degs_2h.csv", row.names = FALSE)
 #Create Degs venn diagram ----
-degs_24h_list = degs_24h$external_gene_name
-degs_2h_list = degs_2h$external_gene_name
+#unique removes replicates
+degs_24h_list = unique(degs_24h$external_gene_name)
+degs_2h_list = unique(degs_2h$external_gene_name)
 # Calculate overlaps
 shared_genes = intersect(degs_24h_list, degs_2h_list)
 unique_24h = setdiff(degs_24h_list, degs_2h_list)
@@ -280,19 +289,18 @@ ggVennDiagram(list("24h" = degs_24h_list, "2h" = degs_2h_list)) +
     plot.margin = unit(c(2, 2, 2, 2), "cm")
   )
 ggsave("results/figures/venndiagram.pdf")
-#9.1 Heat map of top 250 genes
 # Up and downregulated degs venndiagram ----
 # Upregulated ----
 # Create objects containing only significant pos or neg fold change
-up_degs_2h = filter(degs_2h, log2FoldChange > 1 )
-down_degs_2h = filter(degs_2h, log2FoldChange < -1 )
-up_degs_24h = filter(degs_24h, log2FoldChange > 1 )
-down_degs_24h = filter(degs_24h, log2FoldChange < -1 )
+up_degs_2h = filter(degs_2h, log2FoldChange > 0)  
+down_degs_2h = filter(degs_2h, log2FoldChange < 0) 
+up_degs_24h = filter(degs_24h, log2FoldChange > 0)  
+down_degs_24h = filter(degs_24h, log2FoldChange < 0)  
 #Create lists
-up_degs_2h_list = up_degs_2h$external_gene_name
-down_degs_2h_list = down_degs_2h$external_gene_name
-up_degs_24h_list = up_degs_24h$external_gene_name
-down_degs_24h_list = down_degs_24h$external_gene_name
+up_degs_2h_list = unique(up_degs_2h$external_gene_name)
+down_degs_2h_list = unique(down_degs_2h$external_gene_name)
+up_degs_24h_list = unique(up_degs_24h$external_gene_name)
+down_degs_24h_list = unique(down_degs_24h$external_gene_name)
 #Up regulated stats
 up_shared_genes = intersect(up_degs_24h_list, up_degs_2h_list)
 up_unique_24h = setdiff(up_degs_24h_list, up_degs_2h_list)
