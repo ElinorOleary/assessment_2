@@ -117,7 +117,7 @@ plotPCA(rld, intgroup='Group') +
     legend.text = element_text(size = 10),
     panel.grid.minor = element_blank()
   )
-ggsave("results/figures/pca_plot.pdf")
+ggsave("results/figures/figure1_pca_plot.pdf")
 #Heatmap ----
 #create a distance object containing all sample-sample distances - take the matrix of rld, transpose it - so samples are rowa, calcylate distancw using euxlidean method
 sample_distance = dist(t(assay(rld)), method='euclidean')
@@ -148,9 +148,9 @@ pheatmap(sample_distance_matrix,
          angle_col = 45,
          na_col = "white",
          main = "Euclidean Distance Heatmap of rlog-transformed samples",
-         filename = "results/figures/sample_distance_heatmap.pdf")
+         filename = "results/figures/figure2_sample_distance_heatmap.pdf")
 #Dispersion estimate plot ----
-pdf("results/figures/dispersion_plot.pdf", width = 8, height = 6)
+pdf("results/figures/figure3_dispersion_plot.pdf", width = 8, height = 6)
 plotDispEsts(dds, 
              main = "Dispersion Estimates",
              xlab = "Mean of normalized counts",
@@ -280,28 +280,7 @@ figure_4 = volcano_2h + volcano_24h +
 ggsave("results/figures/figure4_combined_volcano.pdf",
        figure_4,
        width = 12, height = 6)
-#Annotate results with ensembl gene anotations ----
-#use verion 108 and get the mmusculus gene anotations
-ensembl108 = useEnsembl(biomart="ensembl", version=108)
-ensembl108 = useDataset("mmusculus_gene_ensembl", mart=ensembl108)
-#create data frame with the following annotations - filter by ensemb gene id that show up in filtered_results
-annotation = getBM(attributes=c('ensembl_gene_id', 'chromosome_name', 
-                                'start_position', 'end_position', 
-                                'strand', 'gene_biotype', 'external_gene_name',
-                                'description'),
-                   filters = 'ensembl_gene_id', values = filtered_results_24h$ensembl_gene_id,
-                   mart = ensembl108)
-#annotate 24h filtered results
-annot_results_24h = left_join(filtered_results_24h, annotation)
-#arrange annoted_results by padj
-annot_results_24h = arrange(annot_results_24h, padj)
-write.csv(annot_results_24h, file = "results/annot_results_24.csv", row.names = FALSE)
-#View(head(annot_results_24h, 10))
-#Annotate 2h filtered results
-annot_results_2h = left_join(filtered_results_2h, annotation)
-annot_results_2h = arrange(annot_results_2h, padj)
-write.csv(annot_results_2h, file = "results/annot_results_2h.csv", row.names = FALSE)
-#View(head(annot_results_24h, 10))
+
 #Create DEGs tables ----
 #degs for 24h
 #absolute fold change (pos or neg >1) and adj p value <0.05
