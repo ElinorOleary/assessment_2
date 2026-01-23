@@ -181,8 +181,8 @@ filtered_results_2h = mutate(filtered_results_2h,
                                                           "Not significant"))
 )
 #Volcano plot colour scheme ----
-volcano_colours = c("Up-regulated" = "red", 
-                    "Down-regulated" = "blue",  
+volcano_colours = c("Up-regulated" = "#9d0208", 
+                    "Down-regulated" = "#003049",  
                     "Not significant" = "grey")
 #24hr comparison volcano plot ----
 #plot log2 fold change against logpVal - plot of how much it changes vs statistical significance
@@ -314,25 +314,39 @@ cat("Downregulated DEGs shared:", length(down_shared_genes), "\n")
 cat("Total DEGs Downregulated at 24h:", length(down_degs_24h_list), "\n")
 cat("Total DEGs Downregulated at 2h:", length(down_degs_2h_list),"\n")
 #Create upregulated venn diagram
-ggVennDiagram(list("24h" = up_degs_24h_list, "2h" = up_degs_2h_list)) +
-  scale_fill_gradient(low = "white", high = "#606c38", name = "Counts") +
+up_venn = ggVennDiagram(list("24h" = up_degs_24h_list, "2h" = up_degs_2h_list)) +
+  scale_fill_gradient(low = "white", high = "#9d0208", name = "Counts") +
   ggtitle("Upregulated DEGs Overlap at 2h and 24h") +
   theme(
     plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
     text = element_text(size = 6),
     plot.margin = unit(c(2, 2, 2, 2), "cm")
   )
-ggsave("results/figures/upregulated_venndiagram.pdf")
+ggsave("results/figures/upregulated_venndiagram.pdf",
+       up_venn)
 #Create downregulated venn diagram
-ggVennDiagram(list("24h" = down_degs_24h_list, "2h" = down_degs_2h_list)) +
-  scale_fill_gradient(low = "white", high = "#606c38", name = "Counts") +
+down_venn = ggVennDiagram(list("24h" = down_degs_24h_list, "2h" = down_degs_2h_list)) +
+  scale_fill_gradient(low = "white", high = "#003049", name = "Counts") +
   ggtitle("Downregulated DEGs Overlap at 2h and 24h") +
   theme(
     plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
     text = element_text(size = 6),
     plot.margin = unit(c(2, 2, 2, 2), "cm")
   )
-ggsave("results/figures/downregulated_venndiagram.pdf")
+ggsave("results/figures/downregulated_venndiagram.pdf",
+       down_venn)
+#Combine venn diagrams
+combined_venn = up_venn + down_venn +
+  plot_annotation(
+    title = "Figure 5: Overlap of upregulated and downregulated DEGs ",
+    tag_levels = "A"
+  ) & #'&' applys theme to all sub plots
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+ggsave("results/figures/figure5_combined_venn.pdf",
+       combined_venn,
+       width = 12, height = 6)
 
 #Heatmap of DEGs - 2hrs ----
 #get 250 largest fold changes that are also significant
