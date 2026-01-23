@@ -8,6 +8,7 @@ library(RColorBrewer)
 library(biomaRt) 
 library(ggVennDiagram)
 library(patchwork)
+library (ggrepel)
 # Colour schemes: ----
 group_colours = c("Allo24h" = "#264653", 
                   "Allo2h" = "#e9c46a", 
@@ -188,10 +189,40 @@ filtered_results_2h = mutate(filtered_results_2h,
                                                    ifelse(log2FoldChange < -1 & padj < 0.05, "Down-regulated",
                                                           "Not significant"))
 )
+#Annotate results with ensembl gene anotations ----
+#use verion 108 and get the mmusculus gene anotations
+ensembl108 = useEnsembl(biomart="ensembl", version=108)
+ensembl108 = useDataset("mmusculus_gene_ensembl", mart=ensembl108)
+#create data frame with the following annotations - filter by ensemb gene id that show up in filtered_results
+annotation = getBM(attributes=c('ensembl_gene_id', 'chromosome_name', 
+                                'start_position', 'end_position', 
+                                'strand', 'gene_biotype', 'external_gene_name',
+                                'description'),
+                   filters = 'ensembl_gene_id', values = filtered_results_24h$ensembl_gene_id,
+                   mart = ensembl108)
+#annotate 24h filtered results
+annot_results_24h = left_join(filtered_results_24h, annotation)
+#arrange annoted_results by padj
+annot_results_24h = arrange(annot_results_24h, padj)
+write.csv(annot_results_24h, file = "results/annot_results_24.csv", row.names = FALSE)
+#View(head(annot_results_24h, 10))
+#Annotate 2h filtered results
+annot_results_2h = left_join(filtered_results_2h, annotation)
+annot_results_2h = arrange(annot_results_2h, padj)
+write.csv(annot_results_2h, file = "results/annot_results_2h.csv", row.names = FALSE)
+#View(head(annot_results_24h, 10))
 #Volcano plot colour scheme ----
 volcano_colours = c("Up-regulated" = "#9d0208", 
                     "Down-regulated" = "#003049",  
                     "Not significant" = "grey")
+#show top 10 significant degs ----
+top_24h = bind_rows(degs_24h %>%
+                      arrange(padj) %>%
+                      slice_head(n = 10))
+
+top_2h = bind_rows(degs_2h %>%
+                     arrange(padj) %>%
+                     slice_head(n = 10))
 #24hr comparison volcano plot ----
 #plot log2 fold change against logpVal - plot of how much it changes vs statistical significance
 volcano_24h = ggplot(filtered_results_24h, aes(x=log2FoldChange, y=logPVal, colour = Significance)) + 
@@ -205,6 +236,12 @@ volcano_24h = ggplot(filtered_results_24h, aes(x=log2FoldChange, y=logPVal, colo
     title = "Allo 24h vs Naive",
     x = "log2 Fold Change",
     y = "-log10 (adjusted p-value)") +
+  #label the sig genes
+  geom_label_repel(data = top_24h, aes(label = external_gene_name),
+                   fill = "white", colour = "grey5", size = 3, 
+                   box.padding = 0.3, point.padding = 0.2,
+                   max.overlaps = Inf,
+                   segment.color = "grey40", segment.size = 0.4) +
   theme_bw() #white background
 ggsave("results/figures/volcano_plot_24h.pdf",
        volcano_24h)
@@ -219,6 +256,11 @@ volcano_2h = ggplot(filtered_results_2h, aes(x=log2FoldChange, y=logPVal, color 
     title = "Allo 2h vs Naive",
     x = "log2 Fold Change",
     y = "-log10 (adjusted p-value)") +
+  geom_label_repel(data = top_2h, aes(label = external_gene_name),
+                   fill = "white", colour = "grey5", size = 3, 
+                   box.padding = 0.3, point.padding = 0.2,
+                   max.overlaps = Inf,
+                   segment.color = "grey40", segment.size = 0.4) +
   theme_bw()
 ggsave("results/figures/volcano_plot_2h.pdf",
        volcano_2h)
